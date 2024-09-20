@@ -1,18 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import Login from './components/Login';
-import SignUp from './components/SignUp';
-import Tools from './components/Tools';
+import MainApp from './ai';
+import Auth from './Auth';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/tools" element={<Tools />} />
+        <Route path="/" element={<MainApp />} />
+        <Route path="/auth" element={<Auth />} />
       </Routes>
     </Router>
   );
