@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaRocket, FaChartLine, FaCode, FaUsers, FaTimes, FaCheck, FaLightbulb, FaHandshake, FaGlobe, FaShoppingCart } from 'react-icons/fa';
 import styled, { keyframes } from 'styled-components';
 
@@ -219,10 +219,24 @@ const SubmitButton = styled.button`
 
 const AuthModal = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('login');
+  const modalRef = useRef();
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <ModalOverlay>
-      <ModalContent>
+      <ModalContent ref={modalRef}>
         <CloseButton onClick={onClose}><FaTimes /></CloseButton>
         <TabContainer>
           <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>Login</Tab>
@@ -365,10 +379,11 @@ const NavBar = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(15, 12, 41, 0.9);
-  backdrop-filter: blur(10px);
+  background: ${props => `rgba(15, 12, 41, ${props.opacity})`};
+  backdrop-filter: ${props => `blur(${10 - props.opacity * 10}px)`};
   z-index: 1000;
   padding: 20px 0;
+  transition: all 0.3s ease;
 `;
 
 const NavContent = styled.div`
@@ -398,6 +413,7 @@ const NavLink = styled.a`
   text-decoration: none;
   font-size: 16px;
   transition: opacity 0.3s;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 
   &:hover {
     opacity: 0.7;
@@ -436,6 +452,7 @@ const FeatureIcon = styled.div`
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [navbarOpacity, setNavbarOpacity] = useState(0.3);
 
   useEffect(() => {
     const createParticles = () => {
@@ -462,6 +479,21 @@ function App() {
     }, 50);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.pageYOffset;
+      const maxScroll = 500; // Adjust this value to change how quickly the navbar becomes transparent
+      const newOpacity = Math.max(0, 0.3 - (scrollPosition / maxScroll) * 0.3);
+      setNavbarOpacity(newOpacity);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const particleStyle = {
@@ -519,6 +551,10 @@ function App() {
     // You might want to open a signup form or redirect to a community page
   };
 
+  const handleGetStarted = () => {
+    setShowModal(true);
+  };
+
   return (
     <BackgroundWrapper>
       {particles.map((particle, index) => (
@@ -533,7 +569,7 @@ function App() {
           }}
         />
       ))}
-      <NavBar>
+      <NavBar opacity={navbarOpacity}>
         <NavContent>
           <Logo>Zen Fyre</Logo>
           <NavLinks>
@@ -554,7 +590,7 @@ function App() {
                 Unlock the power of AI to streamline your workflow, boost productivity, and drive innovation.
               </p>
               <ButtonWrapper>
-                <Button onClick={() => setShowModal(true)} />
+                <Button onClick={handleGetStarted}>Get Started</Button>
               </ButtonWrapper>
             </HeroSection>
 
